@@ -45,6 +45,155 @@ function txt(ctx,s,x,y,c='#dce8ff',size=12){
   ctx.fillText(s,x,y);
 }
 
+// ── PROJECTION ORTHOGONALE — 6 CONFIGURATIONS ───
+const CONFIG_PRESETS = [
+  { angle: 50,  label: '① Cas 1 : 0 < angle < π/2 — produit scalaire POSITIF (H entre A et B)',      sign: 'pos' },
+  { angle: 90,  label: '② Cas 2 : angle = π/2 — ORTHOGONALITÉ (H = A, produit scalaire NUL)',        sign: 'zero' },
+  { angle: 130, label: '③ Cas 3 : π/2 < angle < π — produit scalaire NÉGATIF (H à droite de A)',    sign: 'neg' },
+  { angle: 210, label: '④ Cas 4 : π < angle < 3π/2 — produit scalaire NÉGATIF (H à droite de A)',  sign: 'neg' },
+  { angle: 270, label: '⑤ Cas 5 : angle = 3π/2 — ORTHOGONALITÉ (H = A, produit scalaire NUL)',      sign: 'zero' },
+  { angle: 320, label: '⑥ Cas 6 : 3π/2 < angle < 2π — produit scalaire POSITIF (H entre A et B)',  sign: 'pos' },
+];
+
+let currentConfig = 0;
+
+function setConfig(i) {
+  currentConfig = i;
+  $('proj-angle').value = CONFIG_PRESETS[i].angle;
+  for(let k=0;k<6;k++) $('cfg-btn-'+k).classList.toggle('active', k===i);
+  drawProj();
+}
+
+function drawProj() {
+  const angleVal = +$('proj-angle').value;
+  const AB = +$('proj-ab').value;
+  const AC = +$('proj-ac').value;
+  $('proj-angle-v').textContent = angleVal + '°';
+  $('proj-ab-v').textContent = AB;
+  $('proj-ac-v').textContent = AC;
+
+  // detect which config we're in
+  let cfgIdx = 0;
+  if (angleVal === 90)  cfgIdx = 1;
+  else if (angleVal > 0 && angleVal < 90)  cfgIdx = 0;
+  else if (angleVal > 90 && angleVal < 180) cfgIdx = 2;
+  else if (angleVal >= 180 && angleVal < 270) cfgIdx = 3;
+  else if (angleVal === 270) cfgIdx = 4;
+  else cfgIdx = 5;
+  for(let k=0;k<6;k++) $('cfg-btn-'+k).classList.toggle('active', k===cfgIdx);
+
+  const cv = $('c-proj'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  styleCvs(ctx, W, H);
+
+  const theta = angleVal * DEG; // angle en radians
+  const sc = 52;
+  // A au centre gauche
+  const ax = 160, ay = H/2;
+  // B : à droite de A sur l'horizontale
+  const bx = ax + AB * sc, by = ay;
+  // C : à angle theta depuis AB
+  const cx = ax + AC * sc * Math.cos(theta);
+  const cy = ay - AC * sc * Math.sin(theta);
+
+  // H = projeté orthogonal de C sur droite (AB) = droite horizontale passant par A
+  // Sur droite horizontale: H = (ax + AH, ay)
+  const AH_val = AC * Math.cos(theta); // mesure algébrique de AH
+  const hx = ax + AH_val * sc;
+  const hy = ay;
+
+  const ps = AH_val * AB; // = AB × AH (mesure algébrique)
+
+  // ── Dessin de la droite (AB) ────────────────────
+  ctx.strokeStyle = 'rgba(100,160,255,.2)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5,5]);
+  ctx.beginPath(); ctx.moveTo(ax - 30, ay); ctx.lineTo(bx + 40, ay); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── Vecteur AB ─────────────────────────────────
+  arrow(ctx, ax, ay, bx, by, '#4a9eff', 2.5, '', '#4a9eff');
+  txt(ctx, 'AB', (ax+bx)/2, ay + 20, '#4a9eff', 13);
+
+  // ── Vecteur AC ─────────────────────────────────
+  arrow(ctx, ax, ay, cx, cy, '#00d4ff', 2.5, '', '#00d4ff');
+  txt(ctx, 'AC', (ax+cx)/2 + (cy < ay ? -28 : 8), (ay+cy)/2, '#00d4ff', 13);
+
+  // ── Perpendiculaire de C sur (AB) ──────────────
+  if (Math.abs(AH_val) > 0.01) {
+    ctx.strokeStyle = 'rgba(255,209,102,.55)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(hx, hy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // ── Symbole angle droit en H ────────────────────
+  if (Math.abs(AH_val) > 0.05) {
+    const sq = 8;
+    ctx.strokeStyle = 'rgba(255,209,102,.7)';
+    ctx.lineWidth = 1;
+    // angle droit : H est sur l'horizontale, perp est verticale
+    ctx.beginPath();
+    ctx.moveTo(hx, hy - sq);
+    ctx.lineTo(hx + (AH_val >= 0 ? -sq : sq), hy - sq);
+    ctx.lineTo(hx + (AH_val >= 0 ? -sq : sq), hy);
+    ctx.stroke();
+  }
+
+  // ── Vecteur AH (mesure algébrique) ─────────────
+  const ahColor = AH_val > 0 ? '#3ddc84' : AH_val < 0 ? '#ff5252' : '#ffd166';
+  if (Math.abs(AH_val) > 0.05) {
+    arrow(ctx, ax, ay + 28, hx, ay + 28, ahColor, 2, '', ahColor);
+    txt(ctx, 'AH', (ax + hx) / 2 - 8, ay + 44, ahColor, 11);
+  }
+
+  // ── Points ──────────────────────────────────────
+  dot(ctx, ax, ay, 5, '#4a9eff');  txt(ctx, 'A', ax - 14, ay + 4, '#4a9eff', 13);
+  dot(ctx, bx, by, 5, '#4a9eff');  txt(ctx, 'B', bx + 8, by + 4, '#4a9eff', 13);
+  dot(ctx, cx, cy, 5, '#00d4ff');  txt(ctx, 'C', cx + 8, cy - 6, '#00d4ff', 13);
+  if (Math.abs(AH_val) > 0.05) {
+    dot(ctx, hx, hy, 5, '#ffd166');
+    txt(ctx, 'H', hx + (AH_val >= 0 ? 6 : -18), hy - 12, '#ffd166', 13);
+  }
+
+  // ── Arc d'angle ────────────────────────────────
+  const arcR = 36;
+  ctx.strokeStyle = '#ff8c42';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(ax, ay, arcR, -theta, 0, theta > 0);
+  if (theta > Math.PI) ctx.arc(ax, ay, arcR, -theta, 0, false);
+  // Dessiner l'arc dans le bon sens
+  ctx.beginPath();
+  ctx.arc(ax, ay, arcR, 0, -theta, theta > 0 && theta <= Math.PI);
+  ctx.stroke();
+  // label angle
+  const midA = -theta / 2;
+  txt(ctx, angleVal + '°', ax + (arcR+10)*Math.cos(midA) - 8, ay + (arcR+10)*(-Math.sin(midA)) + 4, '#ff8c42', 11);
+
+  // ── Panneau de résultat ─────────────────────────
+  const signColor = ps > 1e-9 ? '#3ddc84' : ps < -1e-9 ? '#ff5252' : '#ffd166';
+  const signWord = ps > 1e-9 ? 'POSITIF ▲' : ps < -1e-9 ? 'NÉGATIF ▼' : 'NUL (orthogonaux) ⊥';
+
+  $('proj-config-label').textContent = CONFIG_PRESETS[cfgIdx].label;
+
+  $('proj-res').innerHTML = `
+    <div class="res" style="border-left-color:${signColor}">
+      <strong>AB⃗ · AC⃗</strong> = <span style="color:var(--yellow)">AH̄</span> × AB
+      = <span style="color:${ahColor}">${fx(AH_val)}</span> × ${fx(AB)}
+      = <strong style="color:${signColor}">${fx(ps)}</strong>
+      &nbsp;—&nbsp; Produit scalaire <strong style="color:${signColor}">${signWord}</strong>
+    </div>
+    <div class="res orange">
+      cos(θ) = cos(${angleVal}°) = ${fx(Math.cos(theta))}
+      &nbsp;→&nbsp; <span style="color:var(--yellow)">AH̄</span> = AC × cos(θ) = ${fx(AC)} × ${fx(Math.cos(theta))} = ${fx(AH_val)}
+    </div>`;
+}
+
+['proj-angle','proj-ab','proj-ac'].forEach(id => $(id) && $(id).addEventListener('input', drawProj));
+drawProj();
+
 // ── 01 — ANGLE TOOL ─────────────────────────────
 function drawAngle(){
   const u = +$('un').value, v = +$('vn').value, th = +$('theta').value;

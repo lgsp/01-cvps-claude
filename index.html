@@ -51,35 +51,99 @@
 
 <!-- ══════════════ 01 — DÉFINITIONS ══════════════ -->
 <div class="section fade-in" id="def">
-  <span class="sec-num">01 — Définitions</span>
+  <span class="sec-num">01 — Définition</span>
   <h2>Produit scalaire</h2>
 
-  <p>Soient \(\vec{u}\) et \(\vec{v}\) deux vecteurs du plan (ou de l'espace), \(\theta\) l'angle qu'ils forment.</p>
+  <!-- 1·A PROJECTION ORTHOGONALE -->
+  <h3>1·A — Définition par projection orthogonale</h3>
+
+  <p>
+    Soient \(A\), \(B\), \(C\) trois points non alignés. On appelle <strong>projeté orthogonal de \(C\) sur la droite \((AB)\)</strong> le pied \(H\) de la perpendiculaire abaissée de \(C\) sur \((AB)\).
+  </p>
 
   <div class="card cyan">
-    <div class="card-label">Définition — Formule avec cosinus</div>
-    <div class="formula">\[\vec{u} \cdot \vec{v} = \|\vec{u}\| \cdot \|\vec{v}\| \cdot \cos\theta\]</div>
-    <p style="margin-bottom:0">Le produit scalaire est un <strong>nombre réel</strong> (scalaire), pas un vecteur.</p>
+    <div class="card-label">Définition — Produit scalaire par projection orthogonale</div>
+    <p style="margin-bottom:8px">
+      On définit le produit scalaire \(\overrightarrow{AB} \cdot \overrightarrow{AC}\) par :
+    </p>
+    <div class="formula">\[\overrightarrow{AB} \cdot \overrightarrow{AC} = \overline{AH} \times AB\]</div>
+    <p style="margin-bottom:0">
+      où \(H\) est le projeté orthogonal de \(C\) sur la droite \((AB)\), et \(\overline{AH}\) est la <strong>mesure algébrique</strong> du vecteur \(\overrightarrow{AH}\) sur la droite \((AB)\) : positive si \(\overrightarrow{AH}\) est de même sens que \(\overrightarrow{AB}\), négative sinon.
+    </p>
   </div>
 
-  <h3>Définition par projection orthogonale</h3>
-  <p>Si \(\vec{u}'\) est le projeté orthogonal de \(\vec{u}\) sur la droite portée par \(\vec{v}\), alors :</p>
-  <div class="formula">\[\vec{u} \cdot \vec{v} = \overrightarrow{u'} \cdot \|\vec{v}\|\]</div>
-  <p>où \(\overrightarrow{u'}\) est la mesure algébrique de la projection (positive si même sens que \(\vec{v}\), négative sinon).</p>
+  <p>
+    Le résultat est un <strong>nombre réel</strong> (un scalaire, pas un vecteur). Il peut être positif, négatif ou nul selon la position de \(H\) par rapport à \(A\) et \(B\).
+  </p>
 
-  <h3>Caractérisation de l'orthogonalité</h3>
+  <!-- ANIMATION 6 CONFIGURATIONS -->
+  <h3>Les 6 configurations possibles</h3>
+  <p>Déplacez le curseur pour parcourir les 6 cas selon la valeur de l'angle \(\widehat{(\overrightarrow{AB},\overrightarrow{AC})}\) :</p>
+
+  <!-- Config selector buttons -->
+  <div class="ctrls" id="cfg-btns" style="flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+    <button class="btn active" id="cfg-btn-0" onclick="setConfig(0)">① Aigu</button>
+    <button class="btn" id="cfg-btn-1" onclick="setConfig(1)">② Droit ↑</button>
+    <button class="btn" id="cfg-btn-2" onclick="setConfig(2)">③ Obtus</button>
+    <button class="btn" id="cfg-btn-3" onclick="setConfig(3)">④ &gt; π</button>
+    <button class="btn" id="cfg-btn-4" onclick="setConfig(4)">⑤ Droit ↓</button>
+    <button class="btn" id="cfg-btn-5" onclick="setConfig(5)">⑥ &gt; 3π/2</button>
+  </div>
+
+  <!-- Angle slider -->
+  <div class="ctrls" style="margin-bottom:8px;">
+    <div class="ctrl-group">
+      <label>Angle \(\widehat{(\overrightarrow{AB},\overrightarrow{AC})}\) =</label>
+      <input type="range" id="proj-angle" min="1" max="359" value="50" step="1">
+      <span class="val" id="proj-angle-v">50°</span>
+    </div>
+    <div class="ctrl-group">
+      <label>AB =</label>
+      <input type="range" id="proj-ab" min="1" max="5" value="3" step="0.5">
+      <span class="val" id="proj-ab-v">3</span>
+    </div>
+    <div class="ctrl-group">
+      <label>AC =</label>
+      <input type="range" id="proj-ac" min="1" max="5" value="2.5" step="0.5">
+      <span class="val" id="proj-ac-v">2.5</span>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="c-proj" width="640" height="300"></canvas>
+  </div>
+  <div id="proj-config-label" style="margin:10px 0; font-family:var(--mono); font-size:.78rem; color:var(--cyan); letter-spacing:.06em;"></div>
+  <div id="proj-res"></div>
+
+  <!-- 1·B ORTHOGONALITÉ -->
+  <h3>1·B — Cas de l'orthogonalité</h3>
   <div class="card green">
-    <div class="card-label">Théorème fondamental</div>
-    <div class="formula">\[\vec{u} \perp \vec{v} \iff \vec{u} \cdot \vec{v} = 0\]</div>
-    <p style="margin-bottom:0">(\(\vec{u}\) et \(\vec{v}\) non nuls.) En effet \(\cos(90°) = 0\).</p>
+    <div class="card-label">Définition — Orthogonalité</div>
+    <div class="formula">\[\overrightarrow{AB} \perp \overrightarrow{AC} \iff \overrightarrow{AB} \cdot \overrightarrow{AC} = 0\]</div>
+    <p style="margin-bottom:0">
+      Cela correspond aux configurations ② et ⑤ : \(H = A\), donc \(\overline{AH} = 0\), donc le produit scalaire est nul. Géométriquement, la droite \((AC)\) est perpendiculaire à \((AB)\).
+    </p>
   </div>
 
-  <h3>Propriétés algébriques</h3>
-  <p><strong>Symétrie :</strong> \(\vec{u} \cdot \vec{v} = \vec{v} \cdot \vec{u}\)</p>
-  <p><strong>Bilinéarité :</strong> \((\vec{u}+\vec{v}) \cdot \vec{w} = \vec{u}\cdot\vec{w} + \vec{v}\cdot\vec{w}\) et \((k\vec{u})\cdot\vec{v} = k(\vec{u}\cdot\vec{v})\)</p>
+  <!-- 1·C LIEN COSINUS -->
+  <h3>1·C — Lien avec le cosinus</h3>
+  <p>
+    Dans le triangle \(ABH\) rectangle en \(H\), on a \(\overline{AH} = AB \cdot \cos\theta\) où \(\theta = \widehat{(\overrightarrow{AB},\overrightarrow{AC})}\). En substituant dans la définition :
+  </p>
+  <div class="card cyan">
+    <div class="card-label">Propriété — Formule avec le cosinus</div>
+    <div class="formula">\[\overrightarrow{AB} \cdot \overrightarrow{AC} = AB \times AC \times \cos\theta\]</div>
+    <p style="margin-bottom:0">
+      Cette formule est valable pour toutes les configurations (le signe du cosinus porte l'information du signe de \(\overline{AH}\)).
+    </p>
+  </div>
+  <p>
+    Plus généralement, pour deux vecteurs quelconques \(\vec{u}\) et \(\vec{v}\) d'angle \(\theta\) :
+  </p>
+  <div class="formula">\[\vec{u} \cdot \vec{v} = \|\vec{u}\| \cdot \|\vec{v}\| \cdot \cos\theta\]</div>
 
-  <!-- Outil angle interactif -->
-  <h3>Outil — Visualiser \(\vec{u} \cdot \vec{v}\) selon l'angle</h3>
+  <!-- Outil cosinus interactif -->
+  <h3>Outil — Visualiser selon l'angle (formule cosinus)</h3>
   <div class="ctrls">
     <div class="ctrl-group">
       <label>‖u‖ =</label>
@@ -101,22 +165,30 @@
     <canvas id="c-angle" width="560" height="240"></canvas>
   </div>
   <div id="angle-res"></div>
+
+  <!-- 1·D COORDONNÉES -->
+  <h3>1·D — Expression en base orthonormée (par les coordonnées)</h3>
+  <p>
+    Dans une base orthonormée \((\vec{i}, \vec{j})\), si \(\vec{u} = (x;\,y)\) et \(\vec{v} = (x';\,y')\), alors :
+  </p>
+  <div class="card cyan">
+    <div class="card-label">Propriété — Formule par les coordonnées</div>
+    <div class="formula">\[\vec{u} \cdot \vec{v} = x x' + y y'\]</div>
+  </div>
+  <p><strong>Norme :</strong> \(\|\vec{u}\|^2 = \vec{u}\cdot\vec{u} = x^2 + y^2\), d'où \(\|\vec{u}\| = \sqrt{x^2+y^2}\).</p>
+  <p><strong>Critère d'orthogonalité :</strong> \(\vec{u}\perp\vec{v} \iff xx'+yy'=0\).</p>
+
+  <h3>Propriétés algébriques</h3>
+  <p><strong>Symétrie :</strong> \(\vec{u} \cdot \vec{v} = \vec{v} \cdot \vec{u}\)</p>
+  <p><strong>Bilinéarité :</strong> \((\vec{u}+\vec{v}) \cdot \vec{w} = \vec{u}\cdot\vec{w} + \vec{v}\cdot\vec{w}\) &nbsp;et&nbsp; \((k\vec{u})\cdot\vec{v} = k(\vec{u}\cdot\vec{v})\)</p>
 </div>
 
 <!-- ══════════════ 02 — COORDONNÉES ══════════════ -->
 <div class="section fade-in" id="coord">
-  <span class="sec-num">02 — Expression en base orthonormée</span>
-  <h2>Produit scalaire par les coordonnées</h2>
+  <span class="sec-num">02 — Outil coordonnées</span>
+  <h2>Calculateur — Base orthonormée</h2>
 
-  <p>Dans une base orthonormée \((\vec{i}, \vec{j})\), si \(\vec{u} = (x;\,y)\) et \(\vec{v} = (x';\,y')\) :</p>
-
-  <div class="card cyan">
-    <div class="card-label">Formule coordonnées</div>
-    <div class="formula">\[\vec{u} \cdot \vec{v} = x x' + y y'\]</div>
-  </div>
-
-  <p><strong>Norme :</strong> \(\|\vec{u}\|^2 = \vec{u}\cdot\vec{u} = x^2 + y^2\), d'où \(\|\vec{u}\| = \sqrt{x^2+y^2}\).</p>
-  <p><strong>Critère d'orthogonalité :</strong> \(\vec{u}\perp\vec{v} \iff xx'+yy'=0\).</p>
+  <p>Dans une base orthonormée \((\vec{i}, \vec{j})\), si \(\vec{u} = (x;\,y)\) et \(\vec{v} = (x';\,y')\), alors \(\vec{u} \cdot \vec{v} = xx' + yy'\). Explorez ci-dessous :</p>
 
   <h3>Outil — Calculateur coordonnées</h3>
   <div class="ctrls">
